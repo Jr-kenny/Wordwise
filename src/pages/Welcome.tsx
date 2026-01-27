@@ -58,8 +58,28 @@ const Welcome = () => {
           transition={{ delay: 0.8 }}
           className="text-xs text-muted-foreground"
         >
-          Powered by GenLayer AI
+          Powered by GenLayer Intelligent contract
         </motion.p>
+      </motion.div>
+
+      {/* Footer */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="absolute bottom-6 text-center"
+      >
+        <p className="text-xs text-muted-foreground">
+          Made with ❤️ by{' '}
+          <a
+            href="https://x.com/Jrken_ny"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground hover:text-primary transition-colors font-semibold"
+          >
+            Jrkenny
+          </a>
+        </p>
       </motion.div>
     </div>
   );
