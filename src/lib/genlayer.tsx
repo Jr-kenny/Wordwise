@@ -2,7 +2,7 @@
 import { createClient, createAccount } from "genlayer-js";
 import { studionet } from "genlayer-js/chains"; // ✅ built-in Studio chain
 
-export const CONTRACT_ADDRESS = "0x91f0d5E4c6017B1c502310Cf53B3b60476fDf098";
+export const CONTRACT_ADDRESS = "0x080b0f59764F4aF7f1d73eDceF8B28328f3CAe98";
 
 let client: any = null;
 
