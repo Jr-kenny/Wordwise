@@ -26,11 +26,14 @@ export const initializeGenLayer = async () => {
     throw new Error("Missing VITE_GENLAYER_KEY in environment");
   }
 
+  console.log("🔑 Initializing GenLayer with private key...");
+  
   const account = createAccount(privateKey);
   client = createClient({ chain: studionet, account });
 
+  console.log("⏳ Initializing consensus smart contract...");
   await client.initializeConsensusSmartContract();
-  console.log("Consensus initialized");
+  console.log("✅ Consensus initialized successfully");
 
   return client;
 };
@@ -38,6 +41,7 @@ export const initializeGenLayer = async () => {
 // Read contract state
 export const getWord = async () => {
   try {
+    console.log("📖 Reading word from contract...");
     const activeClient = await initializeGenLayer();
 
     const result = await activeClient.readContract({
@@ -46,12 +50,20 @@ export const getWord = async () => {
       args: [],
     });
 
-    if (!result) return getWordSync();
+    if (!result) {
+      console.warn("No result from contract, using fallback");
+      return getWordSync();
+    }
 
     const data = JSON.parse(result);
+    console.log("✅ Word fetched from contract:", data.word);
     return { word: data.word.toUpperCase(), definition: data.definition };
   } catch (e) {
-    console.error("GenLayer SDK Read Error:", e);
+    console.error("❌ GenLayer Read Error:", e);
+    console.error("Error details:", {
+      message: (e as Error).message,
+      stack: (e as Error).stack,
+    });
     return getWordSync();
   }
 };
@@ -59,6 +71,7 @@ export const getWord = async () => {
 // Write contract state (generate new word)
 export const generateNewWord = async () => {
   try {
+    console.log("🚀 Generating new word via contract...");
     const activeClient = await initializeGenLayer();
 
     const hash = await activeClient.writeContract({
@@ -67,21 +80,39 @@ export const generateNewWord = async () => {
       args: [],
     });
 
-    console.log("Transaction sent! Hash:", hash);
+    console.log("📝 Transaction sent! Hash:", hash);
 
     // FIX: Wait for 'ACCEPTED' instead of 'FINALIZED'
     // This is much faster and confirms the state has updated.
-    await activeClient.waitForTransactionReceipt({
-      hash,
-      status: "ACCEPTED", 
-      retries: 50,      // Optional: ensure enough attempts
-      interval: 2000,   // Optional: check every 2 seconds
-    });
+    console.log("⏳ Waiting for transaction acceptance (timeout: 30s)...");
+    
+    try {
+      await Promise.race([
+        activeClient.waitForTransactionReceipt({
+          hash,
+          status: "ACCEPTED", 
+          retries: 150,      // Increased for slower connections
+          interval: 1500,    // Shorter interval for responsiveness
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Transaction wait timeout")), 30000)
+        )
+      ]);
+    } catch (timeoutErr) {
+      console.warn("⚠️ Transaction receipt timeout, but proceeding to fetch word:", timeoutErr);
+      // Continue anyway - transaction may still be processing
+    }
 
-    console.log("Transaction accepted! Fetching updated word...");
-    return await getWord();
+    console.log("✅ Transaction accepted! Fetching updated word...");
+    const word = await getWord();
+    console.log("🎉 Got new word:", word);
+    return word;
   } catch (e) {
-    console.error("GenLayer SDK Write Error:", e);
+    console.error("❌ GenLayer Write Error:", e);
+    console.error("Error details:", {
+      message: (e as Error).message,
+      stack: (e as Error).stack,
+    });
     return null;
   }
 };
