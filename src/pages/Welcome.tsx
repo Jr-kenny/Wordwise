@@ -26,7 +26,7 @@ const Welcome = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            YOU GUESS
+            WORDWISE
           </motion.h1>
           <motion.p 
             className="text-muted-foreground text-sm sm:text-base max-w-xs mx-auto"

@@ -66,7 +66,7 @@ const Game = () => {
           {/* Header */}
           <div className="text-center">
             <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
-              YOU GUESS
+              WORDWISE
             </h1>
           </div>
 
